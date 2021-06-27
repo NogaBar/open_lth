@@ -19,6 +19,7 @@ class Platform(Hparams):
     _name: str = 'Platform Hyperparameters'
     _description: str = 'Hyperparameters that control the plaform on which the job is run.'
     _num_workers: str = 'The number of worker threads to use for data loading.'
+    gpu: str = '7'
 
     # Manage the available devices and the status of distributed training.
 
@@ -26,7 +27,7 @@ class Platform(Hparams):
     def device_str(self):
         # GPU device.
         if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-            device_ids = ','.join([str(x) for x in range(torch.cuda.device_count())])
+            device_ids = self.gpu
             return f'cuda:{device_ids}'
 
         # CPU device.
