@@ -52,6 +52,21 @@ class Model(base.Model):
         x = self.fc(x)
         return x
 
+    def intermediate(self, x, conv_layers=False, no_activation=False):
+        features_all = [x]
+        features = []
+
+        for l in self.layers:
+            features_all.append(l(features_all[-1]))
+            if isinstance(l, nn.MaxPool2d):
+                features.append(features_all[-1])
+        features_all.append(nn.AvgPool2d(2)(features_all[-1]))
+        features_all.append(features_all[-1].view(features_all[-1].size(0), -1))
+        features.append(features_all[-1])
+        features.append(self.fc(features[-1]))
+        return features
+
+
     @property
     def output_layer_names(self):
         return ['fc.weight', 'fc.bias']

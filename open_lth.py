@@ -5,13 +5,14 @@
 
 import argparse
 import sys
+import os
 
 from cli import runner_registry
 from cli import arg_utils
 import platforms.registry
 
 
-def main():
+def main(args=None, runner_name=None, sub_runner_name=None):
     # The welcome message.
     welcome = '='*82 + '\nOpenLTH: A Framework for Research on Lottery Tickets and Beyond\n' + '-'*82
 
@@ -21,10 +22,11 @@ def main():
         helptext += "\n    * {} {} [...] => {}".format(sys.argv[0], name, runner.description())
     helptext += '\n' + '='*82
 
-    runner_name = arg_utils.maybe_get_arg('subcommand', positional=True)
-    if runner_name not in runner_registry.registered_runners:
-        print(helptext)
-        sys.exit(1)
+    if runner_name is None:
+        runner_name = arg_utils.maybe_get_arg('subcommand', positional=True)
+        if runner_name not in runner_registry.registered_runners:
+            print(helptext)
+            sys.exit(1)
 
     # Add the arguments for that command.
     usage = '\n' + welcome + '\n'
@@ -48,7 +50,9 @@ def main():
     # Add arguments for the various runners.
     runner_registry.get(runner_name).add_args(parser)
 
-    args = parser.parse_args()
+    if args is None:
+        args = parser.parse_args()
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     platform = platforms.registry.get(platform_name).create_from_args(args)
 
     if args.display_output_location:

@@ -34,8 +34,20 @@ class Model(base.Model):
         x = x.view(x.size(0), -1)  # Flatten.
         for layer in self.fc_layers:
             x = F.relu(layer(x))
-
         return self.fc(x)
+
+    def intermediate(self, x, conv_layers=False, no_activation=False):
+        x = x.view(x.size(0), -1)
+        features = []
+        for layer in self.fc_layers:
+            if no_activation:
+                features.append(layer(x))
+                x = F.relu(features[-1])
+            else:
+                features.append(F.relu(layer(x)))
+                x = features[-1]
+        features.append(self.fc(x))
+        return features
 
     @property
     def output_layer_names(self):

@@ -1,0 +1,12 @@
+default_hparams: cifar_resnet_20
+gpu: '6'
+levels: 0
+replicate: 5
+subcommand: lottery_branch
+branch_name: train_init
+pruning_fraction: 0.2
+#property: features_erank
+#trials: 1000
+seed: 259
+#conv_layers: true
+#num_workers: 4

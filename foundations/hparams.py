@@ -180,6 +180,8 @@ class TrainingHparams(Hparams):
 @dataclass
 class PruningHparams(Hparams):
     pruning_strategy: str
+    pruning_fraction_last_fc: float = 0.1
+    pruning_conv: float = 0.1
 
     _name: str = 'Pruning Hyperparameters'
     _description: str = 'Hyperparameters that determine how the model is pruned. ' \

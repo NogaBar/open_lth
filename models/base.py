@@ -46,6 +46,16 @@ class Model(abc.ABC, torch.nn.Module):
                 isinstance(module, torch.nn.modules.linear.Linear)]
 
     @property
+    def prunable_conv_names(self) -> typing.List[str]:
+        """A list of the names of convolutional Tensors of this model that are valid for pruning.
+
+        By default, only the weights of convolutional and linear layers are prunable.
+        """
+
+        return [name + '.weight' for name, module in self.named_modules() if
+                isinstance(module, torch.nn.modules.conv.Conv2d)]
+
+    @property
     @abc.abstractmethod
     def output_layer_names(self) -> typing.List[str]:
         """A list of the names of the Tensors of the output layer of this model."""
@@ -80,6 +90,9 @@ class DataParallel(Model, torch.nn.DataParallel):
     def prunable_layer_names(self): return self.module.prunable_layer_names
 
     @property
+    def prunable_conv_names(self): return self.module.prunable_conv_names
+
+    @property
     def output_layer_names(self): return self.module.output_layer_names
 
     @property
@@ -104,6 +117,9 @@ class DistributedDataParallel(Model, torch.nn.parallel.DistributedDataParallel):
 
     @property
     def prunable_layer_names(self): return self.module.prunable_layer_names
+
+    @property
+    def prunable_conv_names(self): return self.module.prunable_conv_names
 
     @property
     def output_layer_names(self): return self.module.output_layer_names

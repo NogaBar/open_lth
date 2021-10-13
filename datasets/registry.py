@@ -5,11 +5,13 @@
 
 import numpy as np
 
-from datasets import base, cifar10, mnist, imagenet
+from datasets import base, cifar10, mnist, imagenet, fashionmnist, kmnist, cifar100, random_data, random_color_data
 from foundations.hparams import DatasetHparams
 from platforms.platform import get_platform
 
-registered_datasets = {'cifar10': cifar10, 'mnist': mnist, 'imagenet': imagenet}
+registered_datasets = {'cifar10': cifar10, 'mnist': mnist, 'imagenet': imagenet,
+                       'fashionmnist': fashionmnist, 'kmnist': kmnist, 'cifar100': cifar100,
+                       'random': random_data, 'random_color': random_color_data}
 
 
 def get(dataset_hparams: DatasetHparams, train: bool = True):
@@ -22,8 +24,11 @@ def get(dataset_hparams: DatasetHparams, train: bool = True):
         use_augmentation = train and not dataset_hparams.do_not_augment
         if train:
             dataset = registered_datasets[dataset_hparams.dataset_name].Dataset.get_train_set(use_augmentation)
+            # for fake data
+            dataset = dataset[-1] if not dataset[0] else dataset
         else:
             dataset = registered_datasets[dataset_hparams.dataset_name].Dataset.get_test_set()
+            dataset = dataset[-1] if not dataset[0] else dataset
     else:
         raise ValueError('No such dataset: {}'.format(dataset_hparams.dataset_name))
 

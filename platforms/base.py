@@ -20,14 +20,17 @@ class Platform(Hparams):
     _description: str = 'Hyperparameters that control the plaform on which the job is run.'
     _num_workers: str = 'The number of worker threads to use for data loading.'
     gpu: str = '7'
+    os.environ['CUDA_VISIBLE_DEVICES'] = gpu
 
     # Manage the available devices and the status of distributed training.
 
     @property
     def device_str(self):
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ['CUDA_VISIBLE_DEVICES'] = self.gpu
         # GPU device.
         if torch.cuda.is_available() and torch.cuda.device_count() > 0:
-            device_ids = self.gpu
+            device_ids = ','.join([str(x) for x in range(torch.cuda.device_count())])
             return f'cuda:{device_ids}'
 
         # CPU device.
@@ -40,6 +43,7 @@ class Platform(Hparams):
 
     @property
     def is_parallel(self):
+        os.environ['CUDA_VISIBLE_DEVICES'] = self.gpu
         return torch.cuda.is_available() and torch.cuda.device_count() > 1
 
     @property

@@ -150,7 +150,8 @@ def standard_train(
 
     train_loader = datasets.registry.get(dataset_hparams, train=True)
     test_loader = datasets.registry.get(dataset_hparams, train=False)
+    eval_on_train = False
     callbacks = standard_callbacks.standard_callbacks(
         training_hparams, train_loader, test_loader, start_step=start_step,
-        verbose=verbose, evaluate_every_epoch=evaluate_every_epoch)
+        verbose=verbose, evaluate_every_epoch=evaluate_every_epoch, eval_on_train=eval_on_train)
     train(training_hparams, model, train_loader, output_location, callbacks, start_step=start_step)

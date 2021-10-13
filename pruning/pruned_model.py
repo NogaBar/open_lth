@@ -40,6 +40,10 @@ class PrunedModel(Model):
         self._apply_mask()
         return self.model.forward(x)
 
+    def intermediate(self, x, conv_layers=False, no_activation=False):
+        self._apply_mask()
+        return self.model.intermediate(x, conv_layers, no_activation)
+
     @property
     def prunable_layer_names(self):
         return self.model.prunable_layer_names
@@ -61,3 +65,7 @@ class PrunedModel(Model):
     def is_valid_model_name(model_name): raise NotImplementedError()
     @staticmethod
     def get_model_from_name(model_name, outputs, initializer): raise NotImplementedError()
+
+    def normalize_all_parameters(self, factor):
+        for name, param in self.model.named_parameters():
+                param.data *= factor

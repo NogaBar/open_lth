@@ -128,6 +128,7 @@ class Branch(Runner):
                 print(f'Branch {self.name()} (Replicate {self.replicate}, Level {self.level})\n' + '-'*82)
                 print(f'{self.lottery_desc.display}\n{self.desc.branch_hparams.display}')
                 print(f'Output Location: {self.branch_root}\n' + '='*82 + '\n')
+            if get_platform().is_primary_process: self.desc.save(self.branch_root)
 
             args = {f.name: getattr(self.desc.branch_hparams, f.name)
                     for f in fields(self.BranchHparams) if not f.name.startswith('_')}

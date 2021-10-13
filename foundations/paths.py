@@ -22,3 +22,6 @@ def model(root, step): return os.path.join(root, 'model_ep{}_it{}.pth'.format(st
 
 
 def hparams(root): return os.path.join(root, 'hparams.log')
+
+
+def properties(root, property): return os.path.join(root, f'properties_{property}.log')

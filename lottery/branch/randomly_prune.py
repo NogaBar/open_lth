@@ -33,6 +33,23 @@ class Branch(base.Branch):
                                          torch.ones_like(mask[k].size), torch.zeros_like(mask[k].size))
                 mask[k] = shuffle_tensor(layer_mask, seed=seed+i).reshape(mask[k].size)
 
+        # Use layerwise only on fc layers and on conv layers use identity (LTH)
+        elif strategy == 'layerwise_fc':
+            step = self.lottery_desc.str_to_step('0ep')
+            model = models.registry.load(self.level_root, step, self.lottery_desc.model_hparams)
+            fc_keys = set(model.prunable_layer_names) - set(model.prunable_conv_names)
+            for i, k in enumerate(fc_keys):
+                mask[k] = shuffle_tensor(mask[k], seed=seed+i)
+
+        # Use layerwise only on fc layers and on conv layers use identity (LTH)
+        elif strategy == 'layerwise_conv':
+            step = self.lottery_desc.str_to_step('0ep')
+            model = models.registry.load(self.level_root, step, self.lottery_desc.model_hparams)
+            conv_keys = set(model.prunable_conv_names)
+            for i, k in enumerate(conv_keys):
+                mask[k] = shuffle_tensor(mask[k], seed=seed+i)
+
+
         # Identity.
         elif strategy == 'identity': pass
 

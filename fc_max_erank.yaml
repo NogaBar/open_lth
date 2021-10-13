@@ -1,0 +1,27 @@
+default_hparams: mnist_lenet_300_100
+batch_size: 60
+gpu: '6'
+levels: 10-25
+lr: 0.0012
+model_name: mnist_lenet_300_100
+optimizer_name: adam
+replicate: 5
+subcommand: lottery_branch
+branch_name: max_random
+trials: 10000
+property: weight_kaiming
+#algorithm: erank_norm
+#init_lr: 0.01
+#weight_reg_coeff: 1
+#features_norm_coeff: 0.05
+#steps: 1000
+#normalized: true
+top: 3
+#lth_path: /home/noga/open_lth_data/lottery_08fa5624de98f7f995fce833a4c4487b/replicate_5/
+#lth_data: random
+dataset_name: fashionmnist
+training_steps: 40ep
+pruning_strategy: sparse_global
+seed: 259
+num_workers: 3
+

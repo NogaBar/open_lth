@@ -40,7 +40,7 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
     def get_test_set() -> 'Dataset':
         pass
 
-    def __init__(self, examples: np.ndarray, labels):
+    def __init__(self, examples: np.ndarray, labels, dataset: torch.utils.data.Dataset = None):
         """Create a dataset object.
 
         examples is a numpy array of the examples (or the information necessary to get them).
@@ -49,6 +49,12 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         labels is a numpy array of the labels. Each entry is a zero-indexed integer encoding
         of the label.
         """
+        if examples is None:
+            self.dataset = dataset
+            self._examples = None
+            self._labels = None
+            self._subsampled = False
+            return
 
         if examples.shape[0] != labels.shape[0]:
             raise ValueError('Different number of examples ({}) and labels ({}).'.format(
@@ -59,7 +65,8 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
 
     def randomize_labels(self, seed: int, fraction: float) -> None:
         """Randomize the labels of the specified fraction of the dataset."""
-
+        if self._labels is None:
+            raise NotImplementedError
         num_to_randomize = np.ceil(len(self._labels) * fraction).astype(int)
         randomized_labels = np.random.RandomState(seed=seed).randint(self.num_classes(), size=num_to_randomize)
         examples_to_randomize = np.random.RandomState(seed=seed+1).permutation(len(self._labels))[:num_to_randomize]
@@ -67,7 +74,8 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
 
     def subsample(self, seed: int, fraction: float) -> None:
         """Subsample the dataset."""
-
+        if self._labels is None:
+            raise NotImplementedError
         if self._subsampled:
             raise ValueError('Cannot subsample more than once.')
         self._subsampled = True
@@ -78,11 +86,14 @@ class Dataset(abc.ABC, torch.utils.data.Dataset):
         self._labels = self._labels[examples_to_retain]
 
     def __len__(self):
+        if self._labels is None:
+            return len(self.dataset)
         return self._labels.size
 
     def __getitem__(self, index):
         """If there is custom logic for example loading, this method should be overridden."""
-
+        if not self._labels:
+            return self.dataset[index]
         return self._examples[index], self._labels[index]
 
 
@@ -90,10 +101,11 @@ class ImageDataset(Dataset):
     @abc.abstractmethod
     def example_to_image(self, example: np.ndarray) -> Image: pass
 
-    def __init__(self, examples, labels, image_transforms=None, tensor_transforms=None,
+    def __init__(self, examples, labels, dataset: torch.utils.data.Dataset = None, image_transforms=None, tensor_transforms=None,
                  joint_image_transforms=None, joint_tensor_transforms=None):
-        super(ImageDataset, self).__init__(examples, labels)
+        super(ImageDataset, self).__init__(examples, labels, dataset)
         self._image_transforms = image_transforms or []
+        self._tensor_transforms = tensor_transforms or []
         self._tensor_transforms = tensor_transforms or []
         self._joint_image_transforms = joint_image_transforms or []
         self._joint_tensor_transforms = joint_tensor_transforms or []
@@ -102,10 +114,14 @@ class ImageDataset(Dataset):
 
     def __getitem__(self, index):
         if not self._composed:
-            self._composed = torchvision.transforms.Compose(
-                self._image_transforms + [torchvision.transforms.ToTensor()] + self._tensor_transforms)
-
-        example, label = self._examples[index], self._labels[index]
+            # self._composed = torchvision.transforms.Compose(
+                # self._image_transforms + [torchvision.transforms.ToTensor()] + self._tensor_transforms)
+            self._composed = torchvision.transforms.Compose([torchvision.transforms.ToTensor()] +
+                self._image_transforms + self._tensor_transforms)
+        if self._labels is None:
+            example, label = self.dataset[index]
+        else:
+            example, label = self._examples[index], self._labels[index]
         example = self.example_to_image(example)
         for t in self._joint_image_transforms: example, label = t(example, label)
         example = self._composed(example)

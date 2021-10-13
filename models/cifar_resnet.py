@@ -76,6 +76,19 @@ class Model(base.Model):
         out = self.fc(out)
         return out
 
+    def intermediate(self, x, conv_layers=False, no_activation=False):
+        features = []
+        features.append(F.relu(self.bn(self.conv(x))))
+        for i, b in enumerate(self.blocks):
+            features.append(b(features[-1]))
+        # return only the result after average pooling and flattening
+        features[-1] = F.avg_pool2d(features[-1], features[-1].size()[3])
+        features[-1] = features[-1].view(features[-1].size(0), -1)
+
+        features.append(self.fc(features[-1]))
+        return [features[0], features[3], features[6], features[9], features[10]]
+
+
     @property
     def output_layer_names(self):
         return ['fc.weight', 'fc.bias']

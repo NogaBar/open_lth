@@ -28,9 +28,9 @@ class BranchRunner(Runner):
         branch_names = sorted(registry.registered_branches.keys())
         helptext = '='*82 + '\nOpenLTH: A Library for Research on Lottery Tickets and Beyond\n' + '-'*82
         helptext += '\nChoose a branch to run:'
-        for branch_name in branch_names:
-            helptext += "\n    * {} {} {} [...] => {}".format(
-                        sys.argv[0], sys.argv[1], branch_name, registry.get(branch_name).description())
+        # for branch_name in branch_names:
+        #     helptext += "\n    * {} {} {} [...] => {}".format(
+        #                 sys.argv[0], sys.argv[1], branch_name, registry.get(branch_name).description())
         helptext += '\n' + '='*82
 
         # Print an error message if appropriate.
